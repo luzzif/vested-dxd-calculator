@@ -15,10 +15,6 @@ use validation::{validate_from_and_to, validate_level};
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Args {
-    /// Worker level.
-    #[clap(long)]
-    level: u8,
-
     /// Period start date in a dd-mm-yyyy format.
     #[clap(long)]
     from: String,
@@ -27,11 +23,15 @@ struct Args {
     #[clap(long)]
     to: String,
 
-    /// The worker's full time percentage (1 to 100).
+    /// The worker level in the specified period.
+    #[clap(long)]
+    level: u8,
+
+    /// The worker's full time percentage (1 to 100). If a worker only worked half of the hours in the period, 50 is the value to use here.
     #[clap(long)]
     full_time_percentage: f32,
 
-    /// Whether the worker is currently in a trial period.
+    /// Whether the specified period represented a trial period for the worker.
     #[clap(long)]
     trial: bool,
 }
@@ -46,8 +46,8 @@ async fn main() -> eyre::Result<()> {
     let parsed_from = Local.datetime_from_str(format!("{from} 00:00").as_str(), "%d-%m-%Y %R")?;
     let parsed_to = Local.datetime_from_str(format!("{to} 00:00").as_str(), "%d-%m-%Y %R")?;
 
-    let maximum_to_date =
-        parsed_from + Duration::days(get_days_in_month(parsed_from.month(), parsed_from.year())?);
+    let maximum_to_date = parsed_from
+        + Duration::days(get_days_in_month(parsed_from.month(), parsed_from.year())? + 1);
 
     validate_from_and_to(&mut cmd, &parsed_from, &parsed_to, &maximum_to_date);
     validate_level(&mut cmd, &parsed_from, &parsed_to, args.level);
