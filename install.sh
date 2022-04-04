@@ -32,7 +32,7 @@ version=$(get_latest_version)
 binary_name="$(get_arch)-$(get_os)-$version"
 binary_location="${download_folder}/${project_name}"
 
-echo "[1/3] Downloading binary to ${download_folder}..."
+echo "[1/3] Downloading binary version $version to $download_folder..."
 rm -rf ${download_folder}
 mkdir -p ${download_folder}
 curl --fail --location --output "${download_folder}/${binary_name}" "https://github.com/luzzif/${project_name}/releases/download/${version}/${binary_name}"
