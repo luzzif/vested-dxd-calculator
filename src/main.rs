@@ -1,11 +1,14 @@
 mod commons;
 mod pricing;
+mod utils;
 mod validation;
 
-use chrono::{Local, TimeZone};
+use chrono::Datelike;
+use chrono::{Duration, Local, TimeZone};
 use clap::{CommandFactory, Parser};
 use commons::{ONE_JAN_2022, USD_DXD_SALARY_POST_2022, USD_DXD_SALARY_PRE_2022};
 use pricing::get_ath_in_range;
+use utils::{get_days_in_month, get_working_days_in_period};
 use validation::{validate_from_and_to, validate_level};
 
 /// Utility program to calculate the amout of vested DXD to ask for in a certain period of time.
@@ -43,15 +46,22 @@ async fn main() -> eyre::Result<()> {
     let parsed_from = Local.datetime_from_str(format!("{from} 00:00").as_str(), "%d-%m-%Y %R")?;
     let parsed_to = Local.datetime_from_str(format!("{to} 00:00").as_str(), "%d-%m-%Y %R")?;
 
-    validate_from_and_to(&mut cmd, &parsed_from, &parsed_to);
+    let maximum_to_date =
+        parsed_from + Duration::days(get_days_in_month(parsed_from.month(), parsed_from.year())?);
+
+    validate_from_and_to(&mut cmd, &parsed_from, &parsed_to, &maximum_to_date);
     validate_level(&mut cmd, &parsed_from, &parsed_to, args.level);
 
     let ath = get_ath_in_range(&mut cmd, &parsed_from, &parsed_to).await?;
 
+    let working_days_in_period = get_working_days_in_period(&parsed_from, &parsed_to);
+    let working_days_in_month = get_working_days_in_period(&parsed_from, &maximum_to_date);
+    let working_days_multiplier = working_days_in_period as f32 / working_days_in_month as f32;
+
     let mut dxd_usd_salary = if parsed_from.lt(&ONE_JAN_2022) {
-        USD_DXD_SALARY_PRE_2022[(args.level - 1) as usize] as f32
+        USD_DXD_SALARY_PRE_2022[(args.level - 1) as usize] as f32 * working_days_multiplier
     } else {
-        USD_DXD_SALARY_POST_2022[(args.level - 1) as usize] as f32
+        USD_DXD_SALARY_POST_2022[(args.level - 1) as usize] as f32 * working_days_multiplier
     };
     if args.trial {
         dxd_usd_salary /= 2.0;

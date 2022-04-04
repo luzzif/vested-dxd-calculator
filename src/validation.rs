@@ -2,13 +2,26 @@ use crate::commons::ONE_JAN_2022;
 use chrono::{DateTime, Local};
 use clap::{Command, ErrorKind};
 
-pub fn validate_from_and_to(cmd: &mut Command, from: &DateTime<Local>, to: &DateTime<Local>) {
+pub fn validate_from_and_to(
+    cmd: &mut Command,
+    from: &DateTime<Local>,
+    to: &DateTime<Local>,
+    maximum_to_date: &DateTime<Local>,
+) {
     let now = Local::now();
 
     if to.gt(&now) {
         cmd.error(
             ErrorKind::ArgumentConflict,
             "Invalid to value: it must be in the past",
+        )
+        .exit();
+    }
+
+    if to.gt(maximum_to_date) {
+        cmd.error(
+            ErrorKind::ArgumentConflict,
+            "Invalid to value: the given period cannot span more than a month",
         )
         .exit();
     }
@@ -21,7 +34,7 @@ pub fn validate_from_and_to(cmd: &mut Command, from: &DateTime<Local>, to: &Date
         .exit();
     }
 
-    if from.ge(&to) {
+    if from.ge(to) {
         cmd.error(
             ErrorKind::ArgumentConflict,
             "Inconsistent from and to values",
@@ -29,7 +42,7 @@ pub fn validate_from_and_to(cmd: &mut Command, from: &DateTime<Local>, to: &Date
         .exit();
     }
 
-    if from.ge(&to) {
+    if from.ge(to) {
         cmd.error(
             ErrorKind::ArgumentConflict,
             "Inconsistent from and to values",
