@@ -11,3 +11,9 @@ chrono = "0.4.19"
 eyre = "0.6.7"
 lazy_static = "1.4.0"
 serde = { version = "1.0.117", features = ["derive"] }
+
+[profile.release]
+strip = true
+opt-level = "z"
+lto = true
+codegen-units = 1
