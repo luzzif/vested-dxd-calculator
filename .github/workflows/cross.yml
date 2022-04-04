@@ -28,7 +28,7 @@ jobs:
             asset: aarch64-apple-darwin
           - os: windows-latest
             target: x86_64-pc-windows-msvc
-            artifact: vested-dxd-calculator
+            artifact: vested-dxd-calculator.exe
             asset: x86_64-pc-windows-msvc
     steps:
       - name: Checkout sources
