@@ -1,6 +1,7 @@
 on:
-  workflow_dispatch:
-  workflow_call:
+  push:
+    tags:
+      - "v*"
 name: cross-platform
 jobs:
   build:
@@ -13,23 +14,23 @@ jobs:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             artifact: vested-dxd-calculator
-            asset: x86_64-unknown-linux-gnu
+            asset: x86_64-linux
           - os: ubuntu-latest
             target: aarch64-unknown-linux-gnu
             artifact: vested-dxd-calculator
-            asset: aarch64-unknown-linux-gnu
+            asset: aarch64-linux
           - os: macos-latest
             target: x86_64-apple-darwin
             artifact: vested-dxd-calculator
-            asset: x86_64-apple-darwin
+            asset: x86_64-darwin
           - os: macos-latest
             target: aarch64-apple-darwin
             artifact: vested-dxd-calculator
-            asset: aarch64-apple-darwin
+            asset: aarch64-darwin
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             artifact: vested-dxd-calculator.exe
-            asset: x86_64-pc-windows-msvc
+            asset: x86_64-windows
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
@@ -75,10 +76,13 @@ jobs:
           use-cross: ${{ matrix.job.use-cross }}
           command: run
           args: -p vested-dxd-calculator -- --help
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: target/release/${{ matrix.job.artifact }}
-          asset_name: ${{ matrix.job.asset }}
+          asset_name: ${{ matrix.job.asset }}-${{ steps.get_version.outputs.VERSION }}
           tag: ${{ github.ref }}
