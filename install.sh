@@ -25,7 +25,7 @@ get_os() {
 }
 
 get_latest_version() {
-    echo $(curl -sL https://api.github.com/repos/luzzif/${project_name}/releases/latest | jq -r ".tag_name")
+    echo $(curl -sL https://api.github.com/repos/luzzif/${project_name}/releases/latest | grep -o '"tag_name": "[^"]*' | grep -o '[^"]*$')
 }
 
 version=$(get_latest_version)
