@@ -11,8 +11,8 @@ get_arch() {
         "x86_64" )
             echo "x86_64"
         ;;
-        "aarch64" )
-            echo "aarch64"
+        "aarch64" | "arm64" )
+            echo "arm64"
         ;;
         *)
             echo ${NIL}
