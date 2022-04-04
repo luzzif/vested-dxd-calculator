@@ -49,12 +49,15 @@ async fn main() -> eyre::Result<()> {
     let ath = get_ath_in_range(&mut cmd, &parsed_from, &parsed_to).await?;
 
     let mut dxd_usd_salary = if parsed_from.lt(&ONE_JAN_2022) {
-        USD_DXD_SALARY_PRE_2022[(args.level - 1) as usize]
+        USD_DXD_SALARY_PRE_2022[(args.level - 1) as usize] as f32
     } else {
-        USD_DXD_SALARY_POST_2022[(args.level - 1) as usize]
+        USD_DXD_SALARY_POST_2022[(args.level - 1) as usize] as f32
     };
     if args.trial {
-        dxd_usd_salary /= 2;
+        dxd_usd_salary /= 2.0;
+    }
+    if args.full_time_percentage < 100.0 {
+        dxd_usd_salary = dxd_usd_salary * args.full_time_percentage / 100.0
     }
 
     println!(
