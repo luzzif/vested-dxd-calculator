@@ -1,7 +1,11 @@
 use chrono::{DateTime, Datelike, Duration, Local, TimeZone, Weekday};
 
 pub fn get_days_in_month(month: u32, year: i32) -> eyre::Result<i64> {
-    let to_month = (month + 1) % 12;
+    let to_month = if (month + 1) % 13 == 0 {
+        1
+    } else {
+        (month + 1) % 13
+    };
     let to_year = if (month == 12) && (to_month == 1) {
         year + 1
     } else {
@@ -9,6 +13,11 @@ pub fn get_days_in_month(month: u32, year: i32) -> eyre::Result<i64> {
     };
     let from =
         Local.datetime_from_str(format!("01-{month}-{year} 00:00").as_str(), "%d-%m-%Y %R")?;
+    let to_month = if to_month < 10 {
+        format!("0{to_month}")
+    } else {
+        to_month.to_string()
+    };
     let to = Local.datetime_from_str(
         format!("01-{to_month}-{to_year} 00:00").as_str(),
         "%d-%m-%Y %R",
