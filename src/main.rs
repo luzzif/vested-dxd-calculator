@@ -3,12 +3,11 @@ mod pricing;
 mod utils;
 mod validation;
 
-use chrono::Datelike;
-use chrono::{Duration, Local, TimeZone};
+use chrono::{Local, TimeZone};
 use clap::{CommandFactory, Parser};
 use commons::{ONE_JAN_2022, USD_DXD_SALARY_POST_2022, USD_DXD_SALARY_PRE_2022};
 use pricing::get_ath_at_date;
-use utils::{get_days_in_month, get_working_days_in_period};
+use utils::{get_maximum_to_date, get_working_days_in_period};
 use validation::{validate_from_and_to, validate_level};
 
 /// Utility program to calculate the amout of vested DXD to ask for in a certain period of time.
@@ -46,8 +45,7 @@ async fn main() -> eyre::Result<()> {
     let parsed_from = Local.datetime_from_str(format!("{from} 00:00").as_str(), "%d-%m-%Y %R")?;
     let parsed_to = Local.datetime_from_str(format!("{to} 00:00").as_str(), "%d-%m-%Y %R")?;
 
-    let maximum_to_date = parsed_from
-        + Duration::days(get_days_in_month(parsed_from.month(), parsed_from.year())? + 1);
+    let maximum_to_date = get_maximum_to_date(&parsed_from)?;
 
     validate_from_and_to(&mut cmd, &parsed_from, &parsed_to, &maximum_to_date);
     validate_level(&mut cmd, &parsed_from, &parsed_to, args.level);

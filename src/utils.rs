@@ -1,6 +1,10 @@
 use chrono::{DateTime, Datelike, Duration, Local, TimeZone, Weekday};
 
-pub fn get_days_in_month(month: u32, year: i32) -> eyre::Result<i64> {
+pub fn get_maximum_to_date(from: &DateTime<Local>) -> eyre::Result<DateTime<Local>> {
+    let day = from.day();
+    let month = from.month();
+    let year = from.year();
+
     let to_month = if (month + 1) % 13 == 0 {
         1
     } else {
@@ -11,19 +15,23 @@ pub fn get_days_in_month(month: u32, year: i32) -> eyre::Result<i64> {
     } else {
         year
     };
-    let from =
-        Local.datetime_from_str(format!("01-{month}-{year} 00:00").as_str(), "%d-%m-%Y %R")?;
+
     let to_month = if to_month < 10 {
         format!("0{to_month}")
     } else {
         to_month.to_string()
     };
-    let to = Local.datetime_from_str(
-        format!("01-{to_month}-{to_year} 00:00").as_str(),
-        "%d-%m-%Y %R",
-    )?;
 
-    Ok(to.signed_duration_since(from).num_days())
+    let day = if day < 10 {
+        format!("0{day}")
+    } else {
+        day.to_string()
+    };
+
+    Ok(Local.datetime_from_str(
+        format!("{day}-{to_month}-{to_year} 00:00").as_str(),
+        "%d-%m-%Y %R",
+    )?)
 }
 
 pub fn get_working_days_in_period(from: &DateTime<Local>, to: &DateTime<Local>) -> u16 {
