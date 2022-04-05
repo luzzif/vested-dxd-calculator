@@ -81,7 +81,7 @@ Now, depending on the other parameters, the salary can be further affected. If t
 
 After determining the USD value of the salary, the amount of DXD is determined following 2 separate logics depending on the given period of time:
 
-- Pre-2022, the DXD ATH vs USD in the given period is simply determined and DXD given out depending on that value.
+- Pre-2022, the DXD ATH vs USD in the start of the given period is simply determined and DXD given out depending on that value.
 - Post-2022, the DXD value in USD at the `--from` date is used and DXD given out depending on that value.
 
 In both cases, the Covalent API is used to fetch pricing data (Coingecko being the ultimate price source).
