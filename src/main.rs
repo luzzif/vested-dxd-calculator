@@ -7,7 +7,7 @@ use chrono::Datelike;
 use chrono::{Duration, Local, TimeZone};
 use clap::{CommandFactory, Parser};
 use commons::{ONE_JAN_2022, USD_DXD_SALARY_POST_2022, USD_DXD_SALARY_PRE_2022};
-use pricing::get_ath_in_range;
+use pricing::get_ath_at_date;
 use utils::{get_days_in_month, get_working_days_in_period};
 use validation::{validate_from_and_to, validate_level};
 
@@ -52,7 +52,7 @@ async fn main() -> eyre::Result<()> {
     validate_from_and_to(&mut cmd, &parsed_from, &parsed_to, &maximum_to_date);
     validate_level(&mut cmd, &parsed_from, &parsed_to, args.level);
 
-    let ath = get_ath_in_range(&mut cmd, &parsed_from, &parsed_to).await?;
+    let ath = get_ath_at_date(&mut cmd, &parsed_from).await?;
 
     let working_days_in_period = get_working_days_in_period(&parsed_from, &parsed_to);
     let working_days_in_month = get_working_days_in_period(&parsed_from, &maximum_to_date);
@@ -71,8 +71,9 @@ async fn main() -> eyre::Result<()> {
     }
 
     println!(
-        "DXD owed: {} (ATH in period: {} USD, USD amount of DXD: {})",
+        "DXD owed: {} (ATH at {}: {} USD, USD amount of DXD: {})",
         dxd_usd_salary as f32 / ath,
+        from,
         ath,
         dxd_usd_salary
     );

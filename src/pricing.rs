@@ -1,4 +1,4 @@
-use chrono::{DateTime, Local};
+use chrono::{DateTime, Local, TimeZone};
 use clap::{Command, ErrorKind};
 use reqwest::get;
 use serde::Deserialize;
@@ -18,17 +18,13 @@ struct Response {
     data: Data,
 }
 
-pub async fn get_ath_in_range(
-    cmd: &mut Command<'_>,
-    from: &DateTime<Local>,
-    to: &DateTime<Local>,
-) -> eyre::Result<f32> {
-    let days_number = to.signed_duration_since(*from).num_days();
+pub async fn get_ath_at_date(cmd: &mut Command<'_>, date: &DateTime<Local>) -> eyre::Result<f32> {
+    let formatted_from = Local
+        .datetime_from_str("21-05-2020 00:00", "%d-%m-%Y %R")?
+        .format("%Y-%m-%d");
+    let formatted_to = date.format("%Y-%m-%d");
 
-    let formatted_from = from.format("%Y-%m-%d");
-    let formatted_to = to.format("%Y-%m-%d");
-
-    let url = format!("https://api.covalenthq.com/v1/pricing/historical/USD/DXD/?quote-currency=USD&format=JSON&from={formatted_from}&to={formatted_to}&page-number=0&page-size={days_number}&prices-at-asc=false&key=ckey_fcc79a1d8a22411fa535e64176b");
+    let url = format!("https://api.covalenthq.com/v1/pricing/historical/USD/DXD/?quote-currency=USD&format=JSON&from={formatted_from}&to={formatted_to}&page-number=0&page-size=1000&prices-at-asc=false&key=ckey_fcc79a1d8a22411fa535e64176b");
     let prices = get(url).await?.json::<Response>().await?.data.prices;
 
     if prices.len() == 0 {
